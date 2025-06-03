@@ -17,8 +17,6 @@ package cn.onlam.examle.mcp;
 
 import java.util.Map;
 
-import io.modelcontextprotocol.client.McpClient;
-import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.WebFluxSseClientTransport;
 import io.modelcontextprotocol.spec.McpClientTransport;
 import io.modelcontextprotocol.spec.McpSchema;
@@ -33,9 +31,9 @@ import org.springframework.web.reactive.function.client.WebClient;
  * @author Christian Tzolov
  */
 
-public abstract class MyMcpClient {
+public class McpClient {
 
-    public static Logger logger = LoggerFactory.getLogger(MyMcpClient.class);
+    public static Logger logger = LoggerFactory.getLogger(McpClient.class);
 
     private final String baseUrl;
     private final String toolName;
@@ -44,24 +42,14 @@ public abstract class MyMcpClient {
     private final McpClientTransport transport;
 //    private McpSyncClient client;
 
-    public MyMcpClient(Map<String, String> mcpConfig) {
+    public McpClient(Map<String, String> mcpConfig) {
         baseUrl= mcpConfig.get("base-url");
         toolName = mcpConfig.get("tool-name");
         apiKey = mcpConfig.get("api-key");
         this.transport = new WebFluxSseClientTransport(WebClient.builder().baseUrl(baseUrl));
-//        client = io.modelcontextprotocol.client.McpClient.sync(this.transport).build();
-
-//        this.transport = new WebFluxSseClientTransport(WebClient.builder().baseUrl("http://localhost:8080"));
     }
 
-//    public synchronized McpSyncClient initialize() {
-//
-//    }
-
-
-
     public String run(Map<String, Object> toolArgs) {
-
 
         var client = io.modelcontextprotocol.client.McpClient.sync(this.transport).build();
         client.initialize();
@@ -81,33 +69,7 @@ public abstract class MyMcpClient {
 
         client.closeGracefully();
 
-
         return ((McpSchema.TextContent) toolResponse.content().get(0)).text();
     }
-
-
-
-//    public String run() {
-//
-//        var client = McpClient.sync(this.transport).build();
-//        client.initialize();
-//        client.ping();
-//
-//        // List and demonstrate tools
-//        ListToolsResult toolsList = client.listTools();
-//        System.out.println("Available Tools = " + toolsList);
-//
-//        // call tool
-//        CallToolResult weatherForcastResult = client.callTool(new CallToolRequest("getWeatherForecastByLocation",
-//                Map.of("latitude", "47.6062", "longitude", "-122.3321")));
-//        System.out.println("Weather Forcast: " + weatherForcastResult);
-//
-//        CallToolResult alertResult = client.callTool(new CallToolRequest("getAlerts", Map.of("state", "NY")));
-//        System.out.println("Alert Response = " + alertResult);
-//
-//        client.closeGracefully();
-//
-//        return "";
-//    }
 
 }

@@ -17,13 +17,7 @@ public class LlmSelector {
     }
 
     public LLM select(String llmName) {
-//        if (llmInstances.containsKey(llmName)) {
-//            return llmInstances.get(llmName);
-//        } else {
-            LLM llmInstance = applicationContext.getBean(llmName, LLM.class);
-//            llmInstances.put(llmName, llmInstance);
-//            return llmInstance;
-//        }
+        LLM llmInstance = applicationContext.getBean(llmName, LLM.class);
         return llmInstance;
     }
 

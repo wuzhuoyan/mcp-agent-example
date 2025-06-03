@@ -28,8 +28,8 @@ public class ReasoningStep {
     private String prompt;
     private LLM llm;
 
-
-    private Tool tool;
+//    private Tool tool;
+    private List<Tool> tools = new ArrayList<>();
     private StepCompleteHandler stepCompleteHandler;
 
 
@@ -94,13 +94,15 @@ public class ReasoningStep {
         }
     }
 
+
+
     public ReasoningStep tool(Tool tool) {
-        this.tool = tool;
+        this.tools.add(tool);
         return this;
     }
 
     public ReasoningStep tool(String toolName, Map<String, String> toolArgs) {
-        this.tool = new Tool(toolName, toolArgs);
+        this.tools.add(new Tool(toolName, toolArgs));
         return this;
     }
 
@@ -132,18 +134,22 @@ public class ReasoningStep {
             nativeQuestion = appendPrompt(nativeQuestion);
         }
 
-        if (this.tool != null) {
+        if (!this.tools.isEmpty()) {
             StringBuilder result = new StringBuilder("参考内容：\n");
-            String perToolResult = null;
-            try {
-                perToolResult = this.tool.call(contextArgs);
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
+            for(Tool tool : this.tools){
+                String perToolResult = "";
+                try {
+                    perToolResult = tool.call(contextArgs) + "\n";
+                } catch (Exception e) {
+                    perToolResult = "";
+                    logger.error(e.getMessage(), e);
+                }
+                result.append(perToolResult);
             }
-            result.append(perToolResult);
-            if (!result.equals("参考内容：\n")) {
+            if (!result.toString().equals("参考内容：\n")) {
                 nativeQuestion = composeMessage(nativeQuestion, result.toString());
             }
+
         }
 
         logger.info("Pre send Question: {}", nativeQuestion);

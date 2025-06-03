@@ -2,6 +2,8 @@ package cn.onlam.examle.mcp;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -12,11 +14,13 @@ import java.util.Map;
 @Component
 public class McpSelector {
 
+    static Logger logger = LoggerFactory.getLogger(McpSelector.class);
+
     @Getter
     @Setter
     private static Map<String, Map<String, String>> mcp;
 
-    private static Map<String, MyMcpClient> mcpInstances;
+    private static Map<String, McpClient> mcpInstances;
 
     Environment environment;
 
@@ -25,18 +29,19 @@ public class McpSelector {
         Binder binder = Binder.get(environment);
         mcp = binder.bind("ai.mcp", Map.class).orElseThrow(() ->new IllegalArgumentException("MCP services is invalid in configuration."));
         mcpInstances = new HashMap<>();
+        print();
     }
 
     public void print() {
-        // print mcpServices
+        logger.info("MCP Tool config: ");
         for (Map.Entry<String, Map<String, String>> entry : mcp.entrySet()) {
-            System.out.println("Key: " + entry.getKey());
-            System.out.println("Value: " + entry.getValue());
+            logger.info("Key: " + entry.getKey());
+            logger.info("Value: " + entry.getValue());
         }
     }
 
-    public static MyMcpClient select(String mcpToolName){
-        MyMcpClient mcpClient = mcpInstances.get(mcpToolName);
+    public static McpClient select(String mcpToolName){
+        McpClient mcpClient = mcpInstances.get(mcpToolName);
         if (mcpClient == null) {
             Map<String, String> mcpConfig = mcp.get(mcpToolName);
             if (mcpConfig == null
@@ -45,7 +50,7 @@ public class McpSelector {
             ) {
                 throw new IllegalArgumentException("Unsupported MCP: " + mcpToolName);
             }
-            mcpClient = new NormalMcpClient(mcpConfig);
+            mcpClient = new McpClient(mcpConfig);
             mcpInstances.put(mcpToolName, mcpClient);
         }
         return mcpClient;
